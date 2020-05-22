@@ -1,9 +1,10 @@
 const bcrypt = require('bcrypt');
 const router = require('express').Router();
 
-let users = [];
+const UsersService = require('../service/UsersFakeService');
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
+	const users = await UsersService.getUsers();
 	res.status(200).json(users);
 });
 
@@ -14,7 +15,7 @@ router
 	})
 	.post(async (req, res) => {
 		const userToLogin = { username: req.body.username, password: req.body.password };
-		const user = users.find((user) => user.username === userToLogin.username);
+		const user = await UsersService.getUserByUsername(req.body.username);
 		if (user === null) res.status(400).send();
 		try {
 			if (bcrypt.compareSync(userToLogin.password, user.password)) res.status(200).redirect('/');
@@ -33,7 +34,7 @@ router
 		try {
 			const hashedPassword = await bcrypt.hash(req.body.password, 10);
 			const user = { username: req.body.username, password: hashedPassword };
-			users.push(user);
+			await UsersService.createUser(user);
 			res.status(201).redirect('/users/login');
 		} catch (err) {
 			res.status(500).send();
