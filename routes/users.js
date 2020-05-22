@@ -18,10 +18,12 @@ router
 		const user = await UsersService.getUserByUsername(req.body.username);
 		if (user === null) res.status(400).send();
 		try {
-			if (bcrypt.compareSync(userToLogin.password, user.password)) res.status(200).redirect('/');
-			else res.status(403).redirect('/users/login');
+			if (bcrypt.compareSync(userToLogin.password, user.password)) {
+				req.session.username = userToLogin.username;
+				res.status(200).redirect('/');
+			} else res.status(403).redirect('/users/login');
 		} catch (err) {
-			res.status(500).send();
+			res.status(500).render('serverError');
 		}
 	});
 
