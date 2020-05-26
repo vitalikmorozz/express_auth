@@ -12,10 +12,17 @@ const app = express();
 // Set template engine
 app.set('view engine', 'ejs');
 
+// Using express-flash to show messages
 app.use(flash());
+
+// Use express layout for easier template layout
 app.use(expressLayout);
+
+// To handle form inputs parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Use express-session to store info about user locally in session
 app.use(
 	session({
 		name: 'Session name',
@@ -26,12 +33,18 @@ app.use(
 	})
 );
 
-// Handle all routes
-app.use('/users', require('./routes/users'));
+// Always pass user to ejs
+app.use((req, res, next) => {
+	res.locals.user = req.session.user;
+	next();
+});
+
+// Handle all additional routes
+app.use('', require('./routes/auth'));
+app.use('/user', require('./routes/user'));
 
 app.get('/', (req, res) => {
-	const message = req.session.username ? `Hello ${req.session.username} user!` : '';
-	res.render('index', { message });
+	res.render('index');
 });
 
 app.listen(PORT, () => {
