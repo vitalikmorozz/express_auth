@@ -4,6 +4,7 @@ const express = require('express');
 const expressLayout = require('express-ejs-layouts');
 const flash = require('express-flash');
 const session = require('express-session');
+const mongoose = require('mongoose');
 
 const PORT = process.env.PORT || 3000;
 
@@ -38,6 +39,25 @@ app.use((req, res, next) => {
 	res.locals.user = req.session.user;
 	next();
 });
+
+// Connect to MongoDB using Mongoose and MongoDB Atlas
+mongoose.connect(
+	process.env.MONGO_DB_URI,
+	{
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+	},
+	(err) => {
+		if (err) console.log(`MongoDB connection failed! Error: ${err}`);
+		else console.log('MongoDB connected successfully');
+	}
+);
+
+// Mongoose deprecation warning fixes
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
 
 // Handle all additional routes
 app.use('', require('./routes/auth'));

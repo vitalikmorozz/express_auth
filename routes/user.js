@@ -1,14 +1,14 @@
 const router = require('express').Router();
 
-const UsersService = require('../service/UsersFakeService');
-const { authorizeUser } = require('../middleware/userMiddleware');
+const UsersService = require('../service/UserService');
+const { authorizedUser, hasRole } = require('../middleware/userMiddleware');
 
-router.get('/list', async (req, res) => {
-	const users = await UsersService.getUsers();
-	res.status(200).json(users);
+router.get('/list', authorizedUser, hasRole('ADMIN'), async (req, res) => {
+	const users = await UsersService.find({});
+	res.status(200).render('user/usersList', { users });
 });
 
-router.route('/dashboard').get(authorizeUser, (req, res) => {
+router.route('/dashboard').get(authorizedUser, (req, res) => {
 	res.render('user/dashboard');
 });
 

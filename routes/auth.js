@@ -1,22 +1,25 @@
 const bcrypt = require('bcrypt');
 const router = require('express').Router();
 
-const UsersService = require('../service/UsersFakeService');
-const { authorizeUser } = require('../middleware/userMiddleware');
+const UserService = require('../service/UserService');
+const { authorizedUser, unauthorizedUser } = require('../middleware/userMiddleware');
 
 router
 	.route('/login')
-	.get((req, res) => {
-		res.render('user/login');
+	.get(unauthorizedUser, (req, res) => {
+		res.render('auth/login');
 	})
-	.post(async (req, res) => {
-		const userToLogin = { username: req.body.username, password: req.body.password };
-		const user = await UsersService.getUserByUsername(req.body.username);
-
-		if (user === null) res.status(400).send();
-		// Compare passwords
+	.post(unauthorizedUser, async (req, res) => {
 		try {
-			if (bcrypt.compareSync(userToLogin.password, user.password)) {
+			// Check if user exists
+			const user = await UserService.findOne({ username: req.body.username });
+			if (!user) {
+				req.flash('error', 'User with that username not found');
+				res.redirect('/login');
+			}
+
+			// Compare passwords
+			if (bcrypt.compareSync(req.body.password, user.password)) {
 				req.session.user = user;
 
 				res.status(200).redirect('/');
@@ -28,24 +31,39 @@ router
 
 router
 	.route('/register')
-	.get((req, res) => {
-		res.render('user/register');
+	.get(unauthorizedUser, (req, res) => {
+		res.render('auth/register');
 	})
-	.post(async (req, res) => {
+	.post(unauthorizedUser, async (req, res) => {
 		try {
+			// Check if passwords are matching
+			if (req.body.password !== req.body.passwordRepeat) {
+				req.flash('error', 'Passwords did not match');
+				res.redirect('/register');
+			}
+
+			// Check if username already used
+			if (await UserService.findByUsername(req.body.username)) {
+				req.flash('error', 'User with that username already exists');
+				res.redirect('/register');
+			}
+
+			// Hash password, give role and save to database
 			const hashedPassword = await bcrypt.hash(req.body.password, 10);
 			const user = { username: req.body.username, password: hashedPassword };
+			user.roles = ['USER'];
 
-			await UsersService.createUser(user);
+			await UserService.save(user);
 
 			req.flash('info', 'You are successfully registered. Now you can log in');
 			res.status(201).redirect('/login');
 		} catch (err) {
-			res.status(500).send();
+			console.log(err);
+			res.status(500).render('serverError');
 		}
 	});
 
-router.route('/logout').post(authorizeUser, (req, res) => {
+router.route('/logout').post(authorizedUser, (req, res) => {
 	req.session.user = null;
 
 	req.flash('info', 'You successfully logged out');

@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 	<button
 		class="navbar-toggler"
 		type="button"
@@ -31,11 +31,25 @@
 				</li>
 			</ul>
 		</div>
-		<% } %> <% if (user) { %>
+		<% } %> <% if (user) { %> <% if (user.roles.includes('ADMIN')) {%>
 		<div class="form-inline">
 			<ul class="navbar-nav mr-auto">
 				<li class="nav-item">
-					<a href="/user/dashboard"><button type="button" class="btn btn-success"><%- user.username%> profile</button></a>
+					<a class="nav-link" href="/user/list">Users list</a>
+				</li>
+			</ul>
+		</div>
+		<% } %>
+		<div class="form-inline">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item">
+					<a href="/user/dashboard"
+						><button type="button" class="btn btn-success">
+							<%- user.username%> <% if (user.roles.includes('ADMIN')) {%>
+							<span class="badge badge-warning">ADMIN</span>
+							<% } %>
+						</button></a
+					>
 				</li>
 			</ul>
 		</div>
