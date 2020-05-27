@@ -1,6 +1,6 @@
 # Express JS auth
 
-Simple ExpressJS authorization, more features in development 💻
+Simple ExpressJS authentication and authorization, more features in development 💻
 
 # How to install
 
