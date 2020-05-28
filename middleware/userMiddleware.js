@@ -2,14 +2,14 @@
 function authorizedUser(req, res, next) {
 	if (req.session.user === undefined || req.session.user === null) {
 		req.flash('error', 'You need to be authenticated to view this page');
-		res.redirect('/login');
+		res.status(403).redirect('/login');
 	} else next();
 }
 
 function unauthorizedUser(req, res, next) {
 	if (req.session.user !== undefined && req.session.user !== null) {
 		req.flash('error', 'You can not do this');
-		res.redirect('/');
+		res.status(403).redirect('/');
 	} else next();
 }
 
