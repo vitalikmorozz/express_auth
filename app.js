@@ -5,6 +5,10 @@ const expressLayout = require('express-ejs-layouts');
 const flash = require('express-flash');
 const session = require('express-session');
 const mongoose = require('mongoose');
+const passport = require('passport');
+
+// Load passport config
+require('./config/passportConfig')(passport);
 
 const PORT = process.env.PORT || 3000;
 
@@ -34,9 +38,13 @@ app.use(
 	})
 );
 
+// Passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Always pass user to ejs
 app.use((req, res, next) => {
-	res.locals.user = req.session.user;
+	res.locals.user = req.user;
 	next();
 });
 
