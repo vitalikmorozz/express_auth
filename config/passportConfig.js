@@ -9,9 +9,7 @@ module.exports = (passport) => {
 			try {
 				// Check if user exists
 				const user = await UserService.findByUsername(username);
-				if (!user) {
-					return done(null, false, { message: 'Incorrect username.' });
-				}
+				if (!user) return done(null, false, { message: 'Incorrect username.' });
 
 				// Compare passwords
 				if (!bcrypt.compareSync(password, user.password)) return done(null, false, { message: 'Incorrect password.' });

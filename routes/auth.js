@@ -52,11 +52,19 @@ router
 		}
 	});
 
-router.route('/logout').post(authorizedUser, (req, res) => {
-	req.logout();
+router
+	.route('/logout')
+	.get((req, res) => {
+		req.logout();
 
-	req.flash('info', 'You successfully logged out');
-	res.redirect('/');
-});
+		req.flash('info', 'You successfully logged out');
+		res.redirect('/');
+	})
+	.post(authorizedUser, (req, res) => {
+		req.logout();
+
+		req.flash('info', 'You successfully logged out');
+		res.redirect('/');
+	});
 
 module.exports = router;
