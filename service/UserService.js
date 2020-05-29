@@ -28,6 +28,15 @@ async function find(filter) {
 	}
 }
 
+async function findById(id) {
+	try {
+		const result = await User.findById(id);
+		return result;
+	} catch (err) {
+		throw err;
+	}
+}
+
 async function findByUsername(username) {
 	try {
 		const result = await User.findOne({ username });
@@ -42,4 +51,5 @@ module.exports = {
 	findOne,
 	find,
 	findByUsername,
+	findById,
 };

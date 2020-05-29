@@ -1,32 +1,21 @@
 const bcrypt = require('bcrypt');
 const router = require('express').Router();
+const passport = require('passport');
 
 const UserService = require('../service/UserService');
-const { authorizedUser, unauthorizedUser } = require('../middleware/userMiddleware');
+const { authorizedUser, unauthorizedUser, hasRole } = require('../config/auth');
 
 router
 	.route('/login')
 	.get(unauthorizedUser, (req, res) => {
 		res.render('auth/login');
 	})
-	.post(unauthorizedUser, async (req, res) => {
-		try {
-			// Check if user exists
-			const user = await UserService.findOne({ username: req.body.username });
-			if (!user) {
-				req.flash('error', 'User with that username not found');
-				res.redirect('/login');
-			}
-
-			// Compare passwords
-			if (bcrypt.compareSync(req.body.password, user.password)) {
-				req.session.user = user;
-
-				res.status(200).redirect('/');
-			} else res.status(403).redirect('/login');
-		} catch (err) {
-			res.status(500).render('serverError');
-		}
+	.post(unauthorizedUser, (req, res, next) => {
+		passport.authenticate('local', {
+			successRedirect: '/user/dashboard',
+			failureRedirect: '/login',
+			failureFlash: true,
+		})(req, res, next);
 	});
 
 router
@@ -63,11 +52,19 @@ router
 		}
 	});
 
-router.route('/logout').post(authorizedUser, (req, res) => {
-	req.session.user = null;
+router
+	.route('/logout')
+	.get((req, res) => {
+		req.logout();
 
-	req.flash('info', 'You successfully logged out');
-	res.redirect('/');
-});
+		req.flash('info', 'You successfully logged out');
+		res.redirect('/');
+	})
+	.post(authorizedUser, (req, res) => {
+		req.logout();
+
+		req.flash('info', 'You successfully logged out');
+		res.redirect('/');
+	});
 
 module.exports = router;
